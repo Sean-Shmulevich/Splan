@@ -35,8 +35,7 @@ def extract_class_names(file_name):
 
     with open(file_path, 'r') as file:
         for line in file:
-            data = json.loads(line)
-            class_name = data['input_values'].get('class_name')
+            class_name = line
             if class_name:
                 # Add the class name in the format (label, value)
                 class_names.append((class_name, class_name))
@@ -99,7 +98,7 @@ class InputOH(App):
         minute_options = [(str(minute), minute) for minute in range(60)]
 
         # Storing references to inputs
-        classNames = extract_class_names('app_data.txt')
+        classNames = extract_class_names('classes.txt')
 
         class_name_input = Select(classNames)
         self.inputs["office_hours_class_name"] = class_name_input
@@ -148,26 +147,33 @@ class InputOH(App):
         if event.key == "enter":
             # Capture the states of checkboxes and inputs
             # print(self.checkboxes)
-            if(self.inputs.get("office_hours_class_name").value == Select.BLANK):
-                self.exit("caught")
-            else:
 
-                checkbox_states = {name: checkbox.value for name, checkbox in self.checkboxes.items()}
-                input_values = {name: input.value for name, input in self.inputs.items()}
-                event_times = {name: times.value for name, times in self.times.items()}
+            s_start = self.times.get("eventStart_start").value
+            s_end = self.times.get("eventStart_end").value
+            e_start = self.times.get("eventEnd_start").value
+            e_end = self.times.get("eventEnd_end").value
+            timesEmpty = s_start == Select.BLANK or s_end == Select.BLANK or e_start == Select.BLANK or e_end == Select.BLANK
 
-                data_to_save = {
-                    "checkbox_states": checkbox_states,
-                    "input_values": input_values,
-                    "times": event_times
-                }
+            if(timesEmpty or self.inputs.get("office_hours_location").value == "" or self.inputs.get("office_hours_class_name").value == Select.BLANK):
+                return
 
-                # You can process these states as needed here
-                with open('app_data.txt', 'a') as file:
-                    json.dump(data_to_save, file)
-                    file.write("\n")  # Add a newline for separation between entries
+            checkbox_states = {name: checkbox.value for name, checkbox in self.checkboxes.items()}
+            input_values = {name: input.value for name, input in self.inputs.items()}
+            event_times = {name: times.value for name, times in self.times.items()}
 
-                self.exit(self.inputs.get("office_hours_class_name").value)
+
+            data_to_save = {
+                "checkbox_states": checkbox_states,
+                "input_values": input_values,
+                "times": event_times
+            }
+
+            # You can process these states as needed here
+            with open('app_data.txt', 'a') as file:
+                json.dump(data_to_save, file)
+                file.write("\n")  # Add a newline for separation between entries
+
+            self.exit(self.inputs.get("office_hours_class_name").value)
 
 
 if __name__ == "__main__":
