@@ -1,4 +1,5 @@
 from textual import events
+
 from textual.app import App, ComposeResult
 from textual.widgets import RichLog
 from textual import on
@@ -7,6 +8,7 @@ from textual.validation import Function, Number, ValidationResult, Validator
 from textual.widgets import Input, Label, Pretty, Static, Checkbox, Select
 from textual.containers import VerticalScroll
 import json
+import os
 
 from term_bg import query_terminal, parse_rgb_value
 
@@ -20,13 +22,13 @@ from term_bg import query_terminal, parse_rgb_value
 
 # Ai notebook
 
-class InputApp(App):
+class InputClass(App):
     """App to display key events."""
     bg_rgb = ""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.checkboxes = {}
-        self.class_time = {}
+        self.times = {}
         self.inputs = {}
 
     # def __init__(self):
@@ -93,19 +95,29 @@ class InputApp(App):
                 self.checkboxes[day] = checkbox
                 yield checkbox
 
+
         yield Label("Start time")
         with VerticalScroll():
             yield Label("Hour")
-            yield Select(hour_options)
+            startTime = Select(hour_options)
+            self.times["eventStart_start"] = startTime
+            yield startTime
             yield Label("Minute")
-            yield Select(minute_options)
+            endTime = Select(minute_options)
+            self.times["eventStart_end"] = endTime
+            yield endTime
 
         yield Label("End time")
         with VerticalScroll():
             yield Label("Hour")
-            yield Select(hour_options)
+            startTime = Select(hour_options)
+            self.times["eventEnd_start"] = startTime
+            yield startTime
             yield Label("Minute")
-            yield Select(minute_options)
+            endTime = Select(minute_options)
+            self.times["eventEnd_end"] = endTime
+            yield endTime
+
 
 
 
@@ -114,28 +126,51 @@ class InputApp(App):
             # Capture the states of checkboxes and inputs
             # print(self.checkboxes)
 
+
             checkbox_states = {name: checkbox.value for name, checkbox in self.checkboxes.items()}
             input_values = {name: input.value for name, input in self.inputs.items()}
+            event_times = {name: times.value for name, times in self.times.items()}
 
-            data_to_save = {
-                "checkbox_states": checkbox_states,
-                "input_values": input_values
-            }
+            s_start = self.times.get("eventStart_start").value
+            s_end = self.times.get("eventStart_end").value
+            e_start = self.times.get("eventEnd_start").value
+            e_end = self.times.get("eventEnd_end").value
+            timesEmpty = s_start == Select.BLANK or s_end == Select.BLANK or e_start == Select.BLANK or e_end == Select.BLANK
 
-            # You can process these states as needed here
-            # print("Checkbox States:", checkbox_states)
-            # print("Input Values:", input_values)
-            with open('app_data.txt', 'a') as file:
-                json.dump(data_to_save, file)
-                file.write("\n")  # Add a newline for separation between entries
 
-            self.exit()
+            class_name = self.inputs["class_name"].value
+            class_name_exists = False
+            if os.path.exists('classes.txt'):
+                with open('classes.txt', 'r') as file:
+                    for line in file:
+                        if class_name == line.strip():
+                            class_name_exists = True
+                            break
 
-def run_app():
-    app = InputApp()
-    app.run()
+            #check if class name already exists
+
+            if(not class_name_exists and (class_name != "") and (self.inputs["class_location"].value != "") and (not timesEmpty)):
+                data_to_save = {
+                    "checkbox_states": checkbox_states,
+                    "input_values": input_values,
+                    "times": event_times
+                }
+
+                # You can process these states as needed here
+                # print("Checkbox States:", checkbox_states)
+                # print("Input Values:", input_values)
+                with open('classes.txt', 'a') as file:
+                    file.write(class_name)
+                    file.write("\n")  # Add a newline for separation between entries
+                with open('app_data.txt', 'a') as file:
+                    json.dump(data_to_save, file)
+                    file.write("\n")  # Add a newline for separation between entries
+                self.exit("hello")
+
+
 
 if __name__ == "__main__":
-    app = InputApp()
-    app.run()
+    app = InputClass()
+    hello = app.run()
+    print(hello) 
 

@@ -45,49 +45,44 @@
     # button to add a class
     # button to add office hours
 
-#then dash should have some useful info
-# calendar with daily events todos, and classes/office hours., can configure what is on this screen
-
-from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll
+#then dash should have some useful info # calendar with daily events todos, and classes/office hours., can configure what is on this screen from textual.app import App, ComposeResult from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, Static, Label
 from term_bg import query_terminal, parse_rgb_value
 from textual.containers import Container
+from textual.app import App, ComposeResult
+from textual.containers import Horizontal, VerticalScroll
+from inputClass import InputClass
+from officehours import InputOH
 
-from inputClass import run_app
-
-class ButtonsApp(App[str]):
+class ButtonsApp(App):
     color_response = query_terminal("\033]11;?\033\\")
     bg_rgb = parse_rgb_value(color_response)
 
     CSS= """
     Button {
-        margin: 1 2;
         width: 50%;
     }
 
     VerticalScroll {
     }
-    #eventLabel {
-        width: 100%;
-        layout: horizontal;
-        align: center top;
-    }
+
     Label {
-        margin: 1 2;
         width: 50%;
         background: """+bg_rgb+""";\n
         text-align: center;
         padding: 1;
     }
-    #events {
-        width: 100%;
-        align: center top;
+    Container {
         layout: horizontal;
-        height: 65%;
+        align: center top;
     }
+
     Horizontal {
         align: center top;
+        height: 10%;
+    }
+    #label_container {
+        height: 10%;
     }
     Screen {
         background: """+bg_rgb+""";\n}"""
@@ -97,7 +92,7 @@ class ButtonsApp(App[str]):
             Container(
                 Button.error("Manage Todos and Homework"),
                 Button.success("Manage Classes"),
-            id="eventLabel"),
+            ),
         )
 
         # todo, load in todo list items from a file, determine which are in the next 7 days
@@ -106,11 +101,18 @@ class ButtonsApp(App[str]):
         # load in classes and just show them along with a short preview of the details
 
         # make an input form for office hours
-        with Container(id="eventLabel"):
+        with Container(id="label_container"):
             yield Label("Todo list items")
             yield Label("Classes")
-        with Container(id="events"):
+        with Container():
             with VerticalScroll():
+                yield Label("CS1520")
+                yield Label("CS1520")
+                yield Label("CS1520")
+                yield Label("CS1520")
+                yield Label("CS1520")
+                yield Label("CS1520")
+                yield Label("CS1520")
                 yield Label("CS1520")
                 yield Label("CS1520")
                 yield Label("CS1520")
@@ -128,10 +130,16 @@ class ButtonsApp(App[str]):
                 yield Label("CS1520")
 
 
-    async def on_button_pressed(self, event: Button.Pressed) -> None:
-        self.exit(str(event.button))
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.exit(event.button.label)
 
 
 if __name__ == "__main__":
     app = ButtonsApp()
-    print(app.run())
+    buttonPressed = app.run()
+    if(str(buttonPressed) == "Manage Todos and Homework"):
+        app = InputClass()
+        app.run()
+    else:
+        app = InputOH()
+        app.run()

@@ -43,7 +43,7 @@ def extract_class_names(file_name):
 
     return class_names
 
-class InputApp(App):
+class InputOH(App):
     """App to display key events."""
     bg_rgb = ""
     def __init__(self, **kwargs):
@@ -148,11 +148,10 @@ class InputApp(App):
         if event.key == "enter":
             # Capture the states of checkboxes and inputs
             # print(self.checkboxes)
-
             if(self.inputs.get("office_hours_class_name").value == Select.BLANK):
                 self.exit("caught")
             else:
-                
+
                 checkbox_states = {name: checkbox.value for name, checkbox in self.checkboxes.items()}
                 input_values = {name: input.value for name, input in self.inputs.items()}
                 event_times = {name: times.value for name, times in self.times.items()}
@@ -172,6 +171,6 @@ class InputApp(App):
 
 
 if __name__ == "__main__":
-    app = InputApp()
+    app = InputOH()
     print(app.run())
 
